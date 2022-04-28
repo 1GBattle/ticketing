@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express'
 import { body, validationResult } from 'express-validator'
+import { BadRequestError } from '../Errors/BadRequestError'
 
 import { RequestValidationError } from '../Errors/reqestValidationError'
 import { User } from '../models/user'
@@ -26,16 +27,13 @@ router.post(
     const existingUser = await User.findOne({ email })
 
     if (existingUser) {
-      console.log('email in use')
-      return res.send({})
-    } else {
-      const user = User.build({ email, password })
-      await user.save()
-      res.status(201).send(user)
+      throw new BadRequestError('Email in use')
     }
+
+    const user = User.build({ email, password })
+    await user.save()
+    res.status(201).send(user)
   }
 )
-
-class DatabaseValidationError extends Error {}
 
 export { router as signUpRouter }
